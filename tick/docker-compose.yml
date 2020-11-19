@@ -1,0 +1,81 @@
+---
+version: '3.3'
+
+services:
+  influxdb:
+    image: influxdb:latest
+    volumes:
+      - influxdb-storage:/var/lib/influxdb
+    environment:
+      - VIRTUAL_PORT=8086
+      - VIRTUAL_HOST=influx.whoami.local
+      - INFLUXDB_DB=jobmonitor
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=jellyfish
+    networks:
+      - tick_backend
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.services.influx.loadbalancer.server.port=8086"
+      - "traefik.http.routers.influx.rule=Host(`influx.303v.cf`)"
+      - "traefik.http.routers.influx.entrypoints=web-secure"
+      - "traefik.http.routers.influx.tls=true"
+      - "traefik.http.routers.influx.tls.certresolver=letsencrypt"
+
+
+  chronograf:
+    image: chronograf:latest
+    volumes:
+      - chronograf-storage:/var/lib/chronograf
+    depends_on:
+      - influxdb
+    hostname: cmgraylog
+    environment:
+      - VIRTUAL_HOST=monitor.whoami.local
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_USERNAME=admin
+      - INFLUXDB_PASSWORD=jellyfish
+    networks:
+      - tick_backend
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.services.chrono.loadbalancer.server.port=8888"
+      - "traefik.http.routers.chrono.rule=Host(`monitor.303v.cf`)"
+      - "traefik.http.routers.chrono.entrypoints=web-secure"
+      - "traefik.http.routers.chrono.tls=true"
+      - "traefik.http.routers.chrono.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.chrono.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=ljurk:$$apr1$$S57RkfFW$$6BY6.q9uJDeatuCzcNmo//"
+
+
+  telegraf:
+    image: telegraf
+    environment:
+      TELEGRAF_HOST_NAME: 303vcf
+      INFLUX_HOST_NAME: http://influxdb:8086
+      HOST_PROC: /rootfs/proc
+      HOST_SYS: /rootfs/sys
+      HOST_ETC: /rootfs/etc
+    volumes:
+      - ./telegraf:/etc/telegraf/
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /sys:/rootfs/sys:ro
+      - /proc:/rootfs/proc:ro
+      - /etc:/rootfs/etc:ro
+    networks:
+      - tick_backend
+
+volumes:
+  influxdb-storage:
+  chronograf-storage:
+  telegraf-storage:
+
+networks:
+  tick_backend:
+    external: true
+  proxy:
+    external: true
