@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:alpine
+    restart: always
+    volumes:
+      - db:/var/lib/postgresql/data
+    env_file:
+      - db.env
+    networks:
+      - nextcloud
+
+  app:
+    image: nextcloud:apache
+    restart: always
+    volumes:
+      - nextcloud:/var/www/html
+    environment:
+      - POSTGRES_HOST=db
+      - NEXTCLOUD_FQDN=cloud.303v.cf
+      - OVERWRITEHOST=cloud.303v.cf
+      - OVERWRITEPROTOCOL=https
+      - TRUSTED_PROXIES=traefik
+    env_file:
+      - db.env
+    networks:
+      - nextcloud
+      - proxy
+      - ldap
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.nextcloud.rule=Host(`cloud.303v.cf`)"
+      - "traefik.http.routers.nextcloud.entrypoints=web-secure"
+      - "traefik.http.routers.nextcloud.tls=true"
+      - "traefik.http.routers.nextcloud.tls.certresolver=letsencrypt"
+
+volumes:
+  db:
+  nextcloud:
+
+networks:
+  nextcloud:
+  ldap:
+    external: true
+  proxy:
+    external: true
