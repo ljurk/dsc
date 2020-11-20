@@ -7,14 +7,17 @@ services:
     volumes:
       - influxdb-storage:/var/lib/influxdb
     environment:
-      - VIRTUAL_PORT=8086
-      - VIRTUAL_HOST=influx.whoami.local
-      - INFLUXDB_DB=jobmonitor
-      - INFLUXDB_ADMIN_USER=admin
-      - INFLUXDB_ADMIN_PASSWORD=jellyfish
+      - INFLUXDB_DB=telegraf
+      - INFLUXDB_UDP_ENABLED=true
+      - INFLUXDB_UDP_DATABASE=traefik
+    env_file:
+      - ../secrets.env
     networks:
       - tick_backend
       - proxy
+    ports:
+      - 8089:8089/udp
+      - 8086:8086
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
@@ -24,33 +27,25 @@ services:
       - "traefik.http.routers.influx.tls=true"
       - "traefik.http.routers.influx.tls.certresolver=letsencrypt"
 
-
-  chronograf:
-    image: chronograf:latest
+  grafana:
+    image: grafana/grafana:latest
     volumes:
-      - chronograf-storage:/var/lib/chronograf
+      - ./grafana:/etc/grafana/provisioning
+      - grafana-storage:/var/lib/grafana
     depends_on:
       - influxdb
-    hostname: cmgraylog
-    environment:
-      - VIRTUAL_HOST=monitor.whoami.local
-      - INFLUXDB_URL=http://influxdb:8086
-      - INFLUXDB_USERNAME=admin
-      - INFLUXDB_PASSWORD=jellyfish
+    env_file:
+      - ../secrets.env
     networks:
       - tick_backend
       - proxy
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
-      - "traefik.http.services.chrono.loadbalancer.server.port=8888"
       - "traefik.http.routers.chrono.rule=Host(`monitor.303v.cf`)"
       - "traefik.http.routers.chrono.entrypoints=web-secure"
       - "traefik.http.routers.chrono.tls=true"
       - "traefik.http.routers.chrono.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.chrono.middlewares=auth"
-      - "traefik.http.middlewares.auth.basicauth.users=ljurk:$$apr1$$S57RkfFW$$6BY6.q9uJDeatuCzcNmo//"
-
 
   telegraf:
     image: telegraf
@@ -60,6 +55,8 @@ services:
       HOST_PROC: /rootfs/proc
       HOST_SYS: /rootfs/sys
       HOST_ETC: /rootfs/etc
+    env_file:
+      - ../secrets.env
     volumes:
       - ./telegraf:/etc/telegraf/
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -71,8 +68,8 @@ services:
 
 volumes:
   influxdb-storage:
-  chronograf-storage:
   telegraf-storage:
+  grafana-storage:
 
 networks:
   tick_backend:

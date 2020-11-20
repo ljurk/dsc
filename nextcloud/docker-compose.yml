@@ -7,7 +7,7 @@ services:
     volumes:
       - db:/var/lib/postgresql/data
     env_file:
-      - db.env
+      - ../secrets.env
     networks:
       - nextcloud
 
@@ -23,7 +23,7 @@ services:
       - OVERWRITEPROTOCOL=https
       - TRUSTED_PROXIES=traefik
     env_file:
-      - db.env
+      - ../secrets.env
     networks:
       - nextcloud
       - proxy
