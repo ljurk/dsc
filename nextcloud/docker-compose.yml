@@ -27,7 +27,6 @@ services:
     networks:
       - nextcloud
       - proxy
-      - ldap
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
@@ -42,7 +41,5 @@ volumes:
 
 networks:
   nextcloud:
-  ldap:
-    external: true
   proxy:
     external: true
