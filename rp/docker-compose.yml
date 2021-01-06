@@ -31,6 +31,8 @@ services:
 
   links:
     image: links:latest
+    volumes:
+      - ./urls.yaml:/opt/links/urls.yaml
     networks:
       - proxy
     labels:

@@ -1,0 +1,15 @@
+---
+
+303v.cf:
+  mail:
+    ui: https://mail.303v.cf/SOGo
+    configuration: https://mail.303v.cf/
+    mailing lists: https://mail.303v.cf/api/v1/get/alias/all
+  cloud:
+    nextcloud: https://cloud.303v.cf/
+    nextcloud no reddir: https://cloud.303v.cf/login?noredir=1
+  admin:
+    docker: https://docker.303v.cf
+  docs:
+    setup Thunderbird: https://mailcow.github.io/mailcow-dockerized-docs/client/client-thunderbird/
+    setup Outlook: https://mailcow.github.io/mailcow-dockerized-docs/client/client-outlook/
