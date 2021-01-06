@@ -15,5 +15,6 @@ cat <<EOF | docker exec -u 33 --interactive nextcloud_app_1 sh
 ./occ config:app:set sociallogin update_profile_on_login --value=1;
 ./occ config:app:set sociallogin disable_notify_admins --value=1;
 ./occ config:app:set sociallogin auto_create_groups --value=1;
+./occ config:system:set social_login_auto_redirect --value=true;
 
 EOF
