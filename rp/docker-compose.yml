@@ -30,7 +30,7 @@ services:
       - "./cert:/cert"
 
   links:
-    image: links:latest
+    image: selmatud/links:latest
     volumes:
       - ./urls.yaml:/opt/links/urls.yaml
     networks:
