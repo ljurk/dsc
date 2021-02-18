@@ -19,6 +19,7 @@ services:
       - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
       - "--certificatesresolvers.letsencrypt.acme.email=ljurk@303v.cf"
       - "--certificatesresolvers.letsencrypt.acme.storage=/cert/acme.json"
+    restart: always
     networks:
       - proxy
     ports:
@@ -31,6 +32,7 @@ services:
 
   links:
     image: selmatud/links:latest
+    restart: always
     volumes:
       - ./urls.yaml:/opt/links/urls.yaml
     networks:
